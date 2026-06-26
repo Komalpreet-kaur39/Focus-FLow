@@ -63,6 +63,36 @@ const Stats = () => {
             <h3 className="analytics-grade">{stats.rating}</h3>
             <p className="analytics-card-desc">{stats.tip}</p>
           </div>
+
+          {stats.priorityBreakdown && (
+            <div className="analytics-card priority-stats-card">
+              <span className="analytics-card-label">Priority Breakdown</span>
+              <div className="priority-bars">
+                {['high', 'medium', 'low'].map((p) => {
+                  const pData = stats.priorityBreakdown[p] || { total: 0, completed: 0 };
+                  const percent = pData.total > 0 ? Math.round((pData.completed / pData.total) * 100) : 0;
+                  return (
+                    <div key={p} className="priority-stat-row">
+                      <div className="priority-stat-info">
+                        <span className={`priority-text-label ${p}`}>
+                          {p.charAt(0).toUpperCase() + p.slice(1)} Priority
+                        </span>
+                        <span className="priority-stat-count">
+                          {pData.completed}/{pData.total} ({percent}%)
+                        </span>
+                      </div>
+                      <div className="priority-bar-bg">
+                        <div
+                          className={`priority-bar-fill ${p}`}
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="empty-state">

@@ -10,7 +10,8 @@ export default function Manage() {
           const taskId=list[editIndex]._id
           await axios.put(`/api/tasks/${taskId}`,{
             title:taskData.title,
-            detail:taskData.detail
+            detail:taskData.detail,
+            priority:taskData.priority
           })
           setEditIndex(-1)
           }

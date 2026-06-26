@@ -6,12 +6,35 @@ import axios from 'axios'
 import {useEffect} from 'react'
 export default function Tasks() {
     const {list,setList,setEditIndex}=useTasks();
-    const[filter,setFilter]=useState("all");
-    const filteredTasks = list.filter((item) => {
-  if (filter === "active") return !item.completed;
-  if (filter === "completed") return item.completed;
-  return true;
-});
+    const [filter, setFilter] = useState("all");
+    const [priorityFilter, setPriorityFilter] = useState("all");
+    const [sortBy, setSortBy] = useState("newest");
+
+    const processedTasks = list
+      .filter((item) => {
+        if (filter === "active") return !item.completed;
+        if (filter === "completed") return item.completed;
+        return true;
+      })
+      .filter((item) => {
+        if (priorityFilter === "all") return true;
+        return (item.priority || "medium") === priorityFilter;
+      })
+      .sort((a, b) => {
+        if (sortBy === "priority") {
+          const weight = { high: 3, medium: 2, low: 1 };
+          const weightA = weight[a.priority || "medium"];
+          const weightB = weight[b.priority || "medium"];
+          if (weightB !== weightA) return weightB - weightA;
+          // Sub-sort by date if priorities are equal
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        if (sortBy === "oldest") {
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
     const router=useRouter();
 
     useEffect(()=>{
@@ -42,6 +65,7 @@ export default function Tasks() {
       await axios.put(`/api/tasks/${task._id}`,{
         title:task.title,
         detail:task.detail,
+        priority:task.priority || "medium",
         completed:!task.completed
       })
       const response = await axios.get("/api/tasks")
@@ -88,9 +112,38 @@ export default function Tasks() {
             </button>
           </div>
 
+          <div className='dashboard-controls'>
+            <div className='control-group'>
+              <span className='control-label'>Priority:</span>
+              <select
+                className='control-select'
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+              >
+                <option value='all'>All Priorities</option>
+                <option value='high'>High</option>
+                <option value='medium'>Medium</option>
+                <option value='low'>Low</option>
+              </select>
+            </div>
+
+            <div className='control-group'>
+              <span className='control-label'>Sort:</span>
+              <select
+                className='control-select'
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value='newest'>Newest First</option>
+                <option value='oldest'>Oldest First</option>
+                <option value='priority'>Priority (High → Low)</option>
+              </select>
+            </div>
+          </div>
+
           <div className='task-list'>
-            {filteredTasks.length > 0 ? (
-              filteredTasks.map((item) => {
+            {processedTasks.length > 0 ? (
+              processedTasks.map((item) => {
                 const originalIndex = list.findIndex((x) => x === item)
                 return (
                   <TaskItem
@@ -106,7 +159,7 @@ export default function Tasks() {
               <div className='empty-state'>
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="empty-icon"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <p className='empty-title'>No matching tasks</p>
-                <p className='empty-subtitle'>No tasks match your active filter.</p>
+                <p className='empty-subtitle'>No tasks match your filters.</p>
               </div>
             )}
           </div>

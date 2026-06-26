@@ -39,7 +39,12 @@ const TaskItem = ({ item, onToggleComplete, onEdit, onDelete }) => {
           )}
         </button>
         <div className='todo-content'>
-          <span className='todo-title'>{item.title}</span>
+          <div className='todo-header-line'>
+            <span className='todo-title'>{item.title}</span>
+            <span className={`priority-badge ${item.priority || 'medium'}`}>
+              {item.priority || 'medium'}
+            </span>
+          </div>
           {item.detail && <p className='todo-detail'>{item.detail}</p>}
         </div>
       </div>

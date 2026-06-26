@@ -12,9 +12,17 @@ const TaskSchema=new mongoose.Schema({
         type:Boolean,
         default:false,
     },
+    priority:{
+        type:String,
+        enum:["low","medium","high"],
+        default:"medium",
+    },
     },
    {
     timestamps:true,
     }    
 );
-export default mongoose.models.Task||mongoose.model("Task",TaskSchema)
+if (mongoose.models.Task) {
+  delete mongoose.models.Task;
+}
+export default mongoose.model("Task",TaskSchema)
